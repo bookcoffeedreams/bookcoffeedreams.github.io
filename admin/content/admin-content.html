@@ -68,7 +68,6 @@
   position: absolute;
   bottom: 6px;
   left: 50%;
-  transform: translateX(-50%);
   display: flex;
   gap: 10px;
 
@@ -81,6 +80,8 @@
   /* Hide whole box */
   opacity: 0;
   pointer-events: none;
+
+  /* correct final transform (no duplicate) */
   transform: translateX(-50%) translateY(6px);
   transition: opacity .2s ease, transform .2s ease;
 }
@@ -90,7 +91,6 @@
   pointer-events: auto;
   transform: translateX(-50%) translateY(0px);
 }
-
 
 .chapter-actions img {
   width: 16px;

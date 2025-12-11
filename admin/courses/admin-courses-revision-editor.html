@@ -687,12 +687,19 @@
       cardEl.querySelectorAll('input[data-prop], textarea[data-prop], select[data-prop]').forEach(inp=>{
         inp.addEventListener('input', ()=> {
           const prop = inp.dataset.prop;
-          if(inp.type === 'checkbox') {
-            // checkboxes inside these blocks may appear as input[type=checkbox] but not using data-prop in HTML
-            block[prop] = inp.checked;
-          } else {
-            block[prop] = inp.value;
-          }
+          if (inp.type === 'checkbox') {
+  if (block.toggles && prop in block.toggles) {
+    block.toggles[prop] = inp.checked;
+  } else {
+    block[prop] = inp.checked;
+  }
+} else {
+  if (block.toggles && prop in block.toggles) {
+    block.toggles[prop] = inp.value;
+  } else {
+    block[prop] = inp.value;
+  }
+}
           renderPreview();
           markDirty();
         });

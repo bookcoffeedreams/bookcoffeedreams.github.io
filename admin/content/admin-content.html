@@ -635,15 +635,54 @@
               const tile = document.createElement('div'); tile.className = 'chapter-tile';
               const img = document.createElement('img'); img.src = ch.url; img.alt = ch.name || '';
               tile.appendChild(img);
+              const label = document.createElement("div");
+label.style.cssText = "font-size:12px;text-align:center;margin-top:4px;";
+label.textContent = ch.name || "Unnamed";
+tile.appendChild(label);
 
-              const chActions = document.createElement('div'); chActions.className = 'chapter-actions';
-              const viewCh = document.createElement('button'); viewCh.className = 'btn-ghost'; viewCh.innerHTML = '🔎'; viewCh.title='View';
-              const delCh = document.createElement('button'); delCh.className = 'btn-ghost'; delCh.innerHTML = '🗑️'; delCh.title='Delete';
-              chActions.appendChild(viewCh); chActions.appendChild(delCh);
+
+              const chActions = document.createElement('div'); 
+chActions.className = 'chapter-actions';
+
+const editCh = document.createElement('button');
+editCh.className = 'btn-ghost';
+editCh.innerHTML = '✏️';
+editCh.title = 'Edit Name';
+
+const viewCh = document.createElement('button');
+viewCh.className = 'btn-ghost';
+viewCh.innerHTML = '🔎';
+viewCh.title='View';
+
+const delCh = document.createElement('button');
+delCh.className = 'btn-ghost';
+delCh.innerHTML = '🗑️';
+delCh.title='Delete';
+
+chActions.appendChild(editCh);
+chActions.appendChild(viewCh);
+chActions.appendChild(delCh);
               tile.appendChild(chActions);
               grid.appendChild(tile);
 
               viewCh.onclick = () => Swal.fire({ imageUrl: ch.url, imageAlt: ch.name || 'icon', showConfirmButton: true });
+              editCh.onclick = async () => {
+  const { value: newName } = await Swal.fire({
+    title: "Edit Chapter Name",
+    input: "text",
+    inputValue: ch.name || "",
+    showCancelButton: true
+  });
+
+  if (!newName || !newName.trim()) return;
+
+  await updateDoc(doc(db, 'chapter_icons', ch.id), {
+    name: newName.trim()
+  });
+
+  Swal.fire("Updated!", "", "success");
+};
+
               delCh.onclick = async () => {
                 const r = await Swal.fire({ title:'Delete icon?', icon:'warning', showCancelButton:true });
                 if (!r.isConfirmed) return;
@@ -663,7 +702,21 @@
               Swal.fire({ title:'Uploading...', allowOutsideClick:false, didOpen(){ Swal.showLoading(); } });
               try {
                 const url = await uploadToCloudinary(file);
-                await addDoc(collection(db,'chapter_icons'), { subjectId: sub.id, url, createdAt: serverTimestamp() });
+                const { value: chapterName } = await Swal.fire({
+  title: "Enter Chapter Name",
+  input: "text",
+  inputPlaceholder: "e.g. Chemical Bonding",
+  showCancelButton: true
+});
+
+if (!chapterName) return Swal.fire("Name required", "", "warning");
+
+await addDoc(collection(db,'chapter_icons'), {
+  subjectId: sub.id,
+  name: chapterName.trim(),
+  url,
+  createdAt: serverTimestamp()
+});
                 Swal.close();
                 Swal.fire('Uploaded','', 'success');
               } catch (err) {

@@ -76,8 +76,17 @@
   border-radius: 10px;
   backdrop-filter: blur(6px);
   z-index: 10;
+
+  /* NEW — Hide by default */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
 }
 
+.chapter-tile:hover .chapter-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
 
 .chapter-actions img {
   width: 16px;

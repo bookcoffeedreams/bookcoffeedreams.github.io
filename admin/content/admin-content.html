@@ -50,7 +50,19 @@
     .btn-ghost { background: transparent; border: none; padding:6px 8px; border-radius:8px; cursor:pointer; font-size:14px; }
 
     .chapter-grid { display:grid; grid-template-columns: repeat(auto-fill,minmax(84px,1fr)); gap:10px; margin-top:12px; }
-    .chapter-tile { width:100%; aspect-ratio:1/1; border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; position:relative; background:linear-gradient(180deg,#fff,#f3f2ff); box-shadow: 0 6px 14px rgba(8,7,25,0.04); }
+    .chapter-tile {
+  width:100%;
+  aspect-ratio:1/1;
+  border-radius:12px;
+  position:relative;
+  background:linear-gradient(180deg,#fff,#f3f2ff);
+  box-shadow:0 6px 14px rgba(8,7,25,0.04);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
     .chapter-tile img { width:70%; height:70%; object-fit:contain; border-radius:8px; }
     .chapter-actions {
   position: absolute;
@@ -60,11 +72,12 @@
   display: flex;
   gap: 10px;
   background: rgba(255,255,255,0.9);
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 10px;
   backdrop-filter: blur(6px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  z-index: 10;
 }
+
 
 .chapter-actions img {
   width: 16px;
@@ -84,7 +97,14 @@
 
     /* responsive */
     @media (max-width:960px){ .sidebar{ width:100%; height:auto; border-radius:12px } .layout{ flex-direction:column; gap:18px; padding:16px } .subjects-grid{ grid-template-columns: repeat(auto-fill,minmax(180px,1fr)); } }
-  </style>
+  
+  .chapter-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+</style>
 </head>
 
 <body>
@@ -710,7 +730,8 @@ if (sub.iconUrl) {
               const tile = document.createElement('div'); tile.className = 'chapter-tile';
               const img = document.createElement('img'); img.src = ch.url; img.alt = ch.name || '';
               tile.appendChild(img);
-              const label = document.createElement("div");
+
+const label = document.createElement("div");
 label.style.cssText = `
   font-size:12px;
   text-align:center;
@@ -722,7 +743,6 @@ label.style.cssText = `
   display:block;
 `;
 label.textContent = ch.name || "Unnamed";
-tile.appendChild(label);
 
 
               const chActions = document.createElement('div'); 
@@ -748,7 +768,16 @@ chActions.appendChild(editCh);
 chActions.appendChild(viewCh);
 chActions.appendChild(delCh);
               tile.appendChild(chActions);
-              grid.appendChild(tile);
+              const wrapper = document.createElement("div");
+wrapper.style.textAlign = "center";
+
+wrapper.appendChild(tile);
+
+// place label below tile
+wrapper.appendChild(label);
+
+grid.appendChild(wrapper);
+
 
               viewCh.onclick = () => Swal.fire({ imageUrl: ch.url, imageAlt: ch.name || 'icon', showConfirmButton: true });
               editCh.onclick = async () => {

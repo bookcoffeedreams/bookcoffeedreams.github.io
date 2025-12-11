@@ -52,7 +52,25 @@
     .chapter-grid { display:grid; grid-template-columns: repeat(auto-fill,minmax(84px,1fr)); gap:10px; margin-top:12px; }
     .chapter-tile { width:100%; aspect-ratio:1/1; border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; position:relative; background:linear-gradient(180deg,#fff,#f3f2ff); box-shadow: 0 6px 14px rgba(8,7,25,0.04); }
     .chapter-tile img { width:70%; height:70%; object-fit:contain; border-radius:8px; }
-    .chapter-actions { position:absolute; top:6px; right:6px; display:flex; gap:6px; }
+    .chapter-actions {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 4px;
+  background: rgba(255,255,255,0.8);
+  padding: 4px;
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+}
+.chapter-actions img {
+  opacity: 0.8;
+  transition: 0.2s;
+}
+.chapter-actions img:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
     .fab-upload { position: absolute; bottom: 14px; right: 14px; background: linear-gradient(90deg,var(--accent1),var(--accent2)); color:#fff; border:none; width:48px; height:48px; border-radius:999px; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow: 0 8px 18px rgba(124,58,237,0.28); cursor:pointer; }
 
     /* modal styles (Swal default looks good; small helper) */
@@ -565,9 +583,9 @@
 
         // actions (open, rename, delete)
         const actions = document.createElement('div'); actions.className = 'subject-actions';
-        const openBtn = document.createElement('button'); openBtn.className='btn-ghost'; openBtn.title='Open'; openBtn.innerHTML = '🔽';
-        const editBtn = document.createElement('button'); editBtn.className='btn-ghost'; editBtn.title='Rename'; editBtn.innerHTML='✏️';
-        const delBtn = document.createElement('button'); delBtn.className='btn-ghost'; delBtn.title='Delete'; delBtn.innerHTML='🗑️';
+        const openBtn = document.createElement('button'); openBtn.className='btn-ghost'; openBtn.title='Open'; openBtn.innerHTML = `<img src="/assets/icons/downarrow.png" style="width:18px;height:18px;" />`;
+        const editBtn = document.createElement('button'); editBtn.className='btn-ghost'; editBtn.title='Rename'; editBtn.innerHTML = `<img src="/assets/icons/edit.png" style="width:18px;height:18px;" />`;
+        const delBtn = document.createElement('button'); delBtn.className='btn-ghost'; delBtn.title='Delete'; delBtn.innerHTML = `<img src="/assets/icons/delete.png" style="width:18px;height:18px;" />`;;
         actions.appendChild(openBtn); actions.appendChild(editBtn); actions.appendChild(delBtn);
 
         // title block
@@ -636,7 +654,16 @@
               const img = document.createElement('img'); img.src = ch.url; img.alt = ch.name || '';
               tile.appendChild(img);
               const label = document.createElement("div");
-label.style.cssText = "font-size:12px;text-align:center;margin-top:4px;";
+label.style.cssText = `
+  font-size:12px;
+  text-align:center;
+  margin-top:6px;
+  width:100%;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  display:block;
+`;
 label.textContent = ch.name || "Unnamed";
 tile.appendChild(label);
 
@@ -646,18 +673,19 @@ chActions.className = 'chapter-actions';
 
 const editCh = document.createElement('button');
 editCh.className = 'btn-ghost';
-editCh.innerHTML = '✏️';
+editCh.innerHTML = `<img src="/assets/icons/edit.png" style="width:14px;height:14px;" />`;
 editCh.title = 'Edit Name';
 
 const viewCh = document.createElement('button');
 viewCh.className = 'btn-ghost';
-viewCh.innerHTML = '🔎';
+viewCh.innerHTML = `<img src="/assets/icons/magnify.png" style="width:14px;height:14px;" />`; // You can replace with /view.png if you want
 viewCh.title='View';
 
 const delCh = document.createElement('button');
 delCh.className = 'btn-ghost';
-delCh.innerHTML = '🗑️';
+delCh.innerHTML = `<img src="/assets/icons/delete.png" style="width:14px;height:14px;" />`;
 delCh.title='Delete';
+
 
 chActions.appendChild(editCh);
 chActions.appendChild(viewCh);

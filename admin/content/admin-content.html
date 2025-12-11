@@ -54,22 +54,28 @@
     .chapter-tile img { width:70%; height:70%; object-fit:contain; border-radius:8px; }
     .chapter-actions {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  gap: 4px;
-  background: rgba(255,255,255,0.8);
-  padding: 4px;
-  border-radius: 8px;
-  backdrop-filter: blur(4px);
+  gap: 10px;
+  background: rgba(255,255,255,0.9);
+  padding: 6px 10px;
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
+
 .chapter-actions img {
-  opacity: 0.8;
+  width: 16px;
+  height: 16px;
+  opacity: 0.85;
   transition: 0.2s;
 }
+
 .chapter-actions img:hover {
   opacity: 1;
-  transform: scale(1.1);
+  transform: scale(1.15);
 }
     .fab-upload { position: absolute; bottom: 14px; right: 14px; background: linear-gradient(90deg,var(--accent1),var(--accent2)); color:#fff; border:none; width:48px; height:48px; border-radius:999px; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow: 0 8px 18px rgba(124,58,237,0.28); cursor:pointer; }
 
@@ -586,12 +592,31 @@
         const openBtn = document.createElement('button'); openBtn.className='btn-ghost'; openBtn.title='Open'; openBtn.innerHTML = `<img src="/assets/icons/downarrow.png" style="width:18px;height:18px;" />`;
         const editBtn = document.createElement('button'); editBtn.className='btn-ghost'; editBtn.title='Rename'; editBtn.innerHTML = `<img src="/assets/icons/edit.png" style="width:18px;height:18px;" />`;
         const delBtn = document.createElement('button'); delBtn.className='btn-ghost'; delBtn.title='Delete'; delBtn.innerHTML = `<img src="/assets/icons/delete.png" style="width:18px;height:18px;" />`;;
-        actions.appendChild(openBtn); actions.appendChild(editBtn); actions.appendChild(delBtn);
+        actions.appendChild(openBtn);
+actions.appendChild(editBtn);
+
+// NEW — Upload subject icon button
+const iconEditBtn = document.createElement("button");
+iconEditBtn.className = "btn-ghost";
+iconEditBtn.title = "Change Subject Icon";
+iconEditBtn.innerHTML = `<img src="/assets/icons/upload.png" style="width:18px;height:18px;" />`;
+actions.appendChild(iconEditBtn);
+
+actions.appendChild(delBtn);
 
         // title block
         const title = document.createElement('div'); title.className='title';
-        const badge = document.createElement('div'); badge.style.cssText = "width:40px;height:40px;border-radius:10px;background:linear-gradient(90deg,var(--accent1),var(--accent2));display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;margin-right:8px";
-        badge.textContent = escapeHtml((sub.name||'').slice(0,1).toUpperCase());
+        let badge;
+
+if (sub.iconUrl) {
+  badge = document.createElement("img");
+  badge.src = sub.iconUrl;
+  badge.style.cssText = "width:40px;height:40px;border-radius:10px;object-fit:cover;margin-right:8px;";
+} else {
+  badge = document.createElement("div");
+  badge.style.cssText = "width:40px;height:40px;border-radius:10px;background:linear-gradient(90deg,var(--accent1),var(--accent2));display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;margin-right:8px";
+  badge.textContent = escapeHtml((sub.name||'').slice(0,1).toUpperCase());
+}
         title.appendChild(badge);
         const nameWrap = document.createElement('div'); nameWrap.innerHTML = `<div>${escapeHtml(sub.name || 'Untitled')}</div>`;
         title.appendChild(nameWrap);
@@ -631,6 +656,38 @@
           const { value: newName } = await Swal.fire({ title:'Rename Subject', input:'text', inputValue: sub.name || '', showCancelButton:true });
           if (newName && newName.trim()) await updateDoc(doc(db,'subject_icons', sub.id), { name: newName.trim() });
         };
+
+        iconEditBtn.onclick = () => {
+  hiddenSubjectIconFile.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    Swal.fire({
+      title: "Uploading Icon...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    try {
+      const url = await uploadToCloudinary(file);
+
+      await updateDoc(doc(db, "subject_icons", sub.id), {
+        iconUrl: url
+      });
+
+      Swal.close();
+      Swal.fire("Icon Updated!", "", "success");
+
+    } catch (err) {
+      Swal.close();
+      Swal.fire("Upload Failed", err.message, "error");
+    }
+
+    hiddenSubjectIconFile.value = "";
+  };
+
+  hiddenSubjectIconFile.click();
+};
 
         // Open/close subject: render chapter icons
         openBtn.onclick = async () => {

@@ -204,7 +204,8 @@
 /* lift on hover */
 .block-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 14px 40px rgba(16,24,40,0.07);
+  box-shadow: 0 12px 36px rgba(99,102,241,0.10);
+border-color: rgba(99,102,241,0.20);
 }
 
 /* meta column reduced width so body gets more space */
@@ -248,18 +249,30 @@
 /* small divider to split categories and controls */
 .block-divider { height:1px; background:rgba(16,24,40,0.04); margin:10px 0; border-radius:2px; }
 
-/* drag handle visual */
 .drag-handle {
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:30px;
-  height:30px;
-  border-radius:8px;
-  cursor:grab;
-  color:rgba(11,18,32,0.5);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  cursor: grab;
+  color: rgba(11,18,32,0.5);
+  
+  /* Drag fix */
+  touch-action: none;
+  -webkit-user-drag: none;
+  user-select: none;
 }
-.drag-handle:active { cursor:grabbing; }
+.drag-handle:active {
+  cursor: grabbing;
+}
+.block-card img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  user-select: none;
+  pointer-events: auto;
+}
 
 /* responsive tweak: stack meta above on small screens */
 @media (max-width:760px) {
@@ -273,13 +286,8 @@
   z-index: 9999 !important;
   position: relative !important;
 }
-
-/* Ghost preview block (clean card look) */
-.sortable-ghost {
-  background: white !important;
-  border-radius: 14px !important;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08) !important;
-  opacity: 0.6 !important;
+.sortable-chosen {
+  opacity: 0.9 !important;
 }
 
 /* Slight lift animation when dragging starts */
@@ -290,6 +298,36 @@
 #editorCanvas {
   scroll-behavior: smooth;
 }
+    /* disable hover lift while dragging to avoid transform conflicts */
+.block-card.sortable-chosen,
+.block-card.sortable-ghost {
+  transform: none !important;
+  transition: none !important;
+}
+
+/* ensure ghost sits on top and doesn't inherit hover transform */
+.sortable-ghost {
+  background: white !important;
+  border-radius: 14px !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08) !important;
+  opacity: 0.6 !important;
+  z-index: 99998 !important;
+  transform: none !important;
+}
+    .preview > * {
+  margin-bottom: 14px;
+}
+    ::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(99,102,241,0.25);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
   </style>
 </head>
 <body>
@@ -960,18 +998,26 @@ function initSortableEditor() {
     animation: 150,
     handle: ".drag-handle",
     ghostClass: "sortable-ghost",
+
+    // Use Sortable's JS fallback drag (works reliably with transforms/animations)
+    forceFallback: true,
+    fallbackOnBody: true,
+    fallbackTolerance: 10,
+
+    // Auto-scroll while dragging
     scroll: true,
-scrollSensitivity: 80,
-scrollSpeed: 18,
-scrollFn: function(offsetX, offsetY, originalEvent, touchEvt, draggable) {
-  editorCanvas.scrollTop += offsetY;
-},
+    scrollSensitivity: 60, // px from edge to start scrolling
+    scrollSpeed: 20,       // px per frame (tweak if you want faster)
+
     onStart(evt) {
-  // hide ugly dotted browser drag icon
-  if (evt.originalEvent && evt.originalEvent.dataTransfer) {
-    evt.originalEvent.dataTransfer.setDragImage(new Image(), 0, 0);
-  }
-},
+      // hide ugly dotted browser drag image (defensive)
+      if (evt.originalEvent && evt.originalEvent.dataTransfer) {
+        evt.originalEvent.dataTransfer.setDragImage(new Image(), 0, 0);
+      }
+      // ensure the ghost sits above everything
+      editorCanvas.style.zIndex = 1;
+    },
+
     onEnd: evt => {
       const oldIndex = evt.oldIndex;
       const newIndex = evt.newIndex;
@@ -987,8 +1033,6 @@ scrollFn: function(offsetX, offsetY, originalEvent, touchEvt, draggable) {
     }
   });
 }
-
-
     // ---------- Attach block events ----------
     function attachBlockEvents(block, cardEl){
       // actions: up/down/remove/duplicate
@@ -1095,6 +1139,7 @@ scrollFn: function(offsetX, offsetY, originalEvent, touchEvt, draggable) {
         });
       });
       // CATEGORY CHECKBOXES
+      if (!Array.isArray(block.categories)) block.categories = [];
 cardEl.querySelectorAll('[data-cat]').forEach(box => {
   const cat = box.dataset.cat;
 
